@@ -6,7 +6,9 @@ npm run start
 This is a simple example application for demonstrating the `easy-reactions` module. There are three routes:
 
 ``POST localhost:3000/add-reaction``
+
 ``POST localhost:3000/remove-reaction``
+
 ``POST localhost:3000/toggle-reaction``
 
 All routes require the following body:
