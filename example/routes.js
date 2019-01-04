@@ -3,11 +3,10 @@ const router = express.Router();
 
 const Item = require('./models/Item');
 const User = require('./models/User');
-const OtherUserModel = require('./models/OtherUserModel');
 
 router.post('/toggle-reaction', (req, res, next) => {
     const {itemId, ownerId, reactionType} = req.body;
-    OtherUserModel.findOne({_id: ownerId})
+    User.findOne({_id: ownerId})
         .then(owner => {
             return Item.findOne({ _id: itemId })
                 .then(item => {
@@ -18,12 +17,11 @@ router.post('/toggle-reaction', (req, res, next) => {
                 });
         })
         .catch(e => next(e));
-
 });
 
 router.post('/add-reaction', (req, res, next) => {
     const {itemId, ownerId, reactionType} = req.body;
-    OtherUserModel.findOne({_id: ownerId})
+    User.findOne({_id: ownerId})
         .then(owner => {
             return Item.findOne({ _id: itemId })
                 .then(item => {
@@ -39,7 +37,7 @@ router.post('/add-reaction', (req, res, next) => {
 
 router.post('/remove-reaction', (req, res, next) => {
     const {itemId, ownerId, reactionType} = req.body;
-    OtherUserModel.findOne({_id: ownerId})
+    User.findOne({_id: ownerId})
         .then(owner => {
             return Item.findOne({ _id: itemId })
                 .then(item => {

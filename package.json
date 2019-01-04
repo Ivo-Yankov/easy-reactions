@@ -1,13 +1,10 @@
 {
-  "name": "crud-route-builder",
-  "version": "1.2.2",
-  "description": "Creates routes for basic CRUD operations for the provided Mongoose models",
+  "name": "easy-reactions",
+  "version": "1.0.0",
+  "description": "A plugin for mongoose models that adds methods for different types of reactions",
   "main": "index.js",
   "author": "Ivo Yankov",
   "license": "ISC",
-  "dependencies": {
-    "mongoose": "^5.3.13"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ivo-Yankov/crud-route-builder.git"

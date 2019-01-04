@@ -8,15 +8,11 @@
   },
   "dependencies": {
     "body-parser": "^1.18.3",
-    "chai": "^4.2.0",
-    "chai-http": "^4.2.0",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.3",
     "express": "^4.16.3",
     "jade": "~1.11.0",
-    "mocha": "^5.2.0",
-    "mongoose": "^5.1.5",
-    "morgan": "^1.9.1",
+    "mongoose": "^5.4.2",
     "serve-favicon": "~2.4.2"
   }
 }

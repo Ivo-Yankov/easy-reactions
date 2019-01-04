@@ -3,18 +3,15 @@ const init = (mongoose, args = {}) => {
 
     const types = args.types || ["like"];
     const ownerModelName = args.owner || "User";
-    const populateOptions = args.populate || {
-        path: "reactions",
-        populate: {
-            path: "owner",
-            model: ownerModelName
-        }
+
+    const populateOptions = {
+        path: "reactions"
     };
 
     const ReactionSchema = new Schema({
         type: {type: Schema.Types.String, required: true, enum: types},
-        owner: {type: Schema.Types.ObjectId, ref: ownerModelName}
-    });
+        owner: {type: Schema.Types.ObjectId, required: true, ref: ownerModelName}
+    }, {versionKey: false});
 
     const Reaction = mongoose.model('Reaction', ReactionSchema);
 
@@ -40,9 +37,7 @@ const init = (mongoose, args = {}) => {
      * @param next
      */
     const autoPopulateReactions = function (next) {
-        this
-            .populate(populateOptions);
-
+        this.populate(populateOptions);
         next();
     };
 
@@ -67,13 +62,14 @@ const init = (mongoose, args = {}) => {
         });
 
         schema.post('init', countReactionTypes);
+
         schema
             .pre('findOne', autoPopulateReactions)
             .pre('find', autoPopulateReactions);
 
         schema.methods.addReaction = function (reactionType, owner) {
             let newReaction = new Reaction({
-                owner,
+                owner: owner._id,
                 type: reactionType
             });
 
@@ -92,7 +88,7 @@ const init = (mongoose, args = {}) => {
                 let r = this.reactions[i];
                 if (r.owner && r.owner._id.toString() === owner._id.toString() && r.type === reactionType) {
                     this.reactions.pull({_id: r._id});
-                    Reaction.remove({_id: r._id}).exec();
+                    Reaction.deleteMany({_id: r._id}).exec();
                     return this.save().then(() => {
                         return countReactionTypes(this);
                     });
@@ -107,7 +103,7 @@ const init = (mongoose, args = {}) => {
                 let r = this.reactions[i];
                 if (r.owner && r.owner._id.toString() === owner._id.toString()) {
                     this.reactions.pull({_id: r._id});
-                    Reaction.remove({_id: r._id}).exec();
+                    Reaction.deleteMany({_id: r._id}).exec();
 
                     if (r.type !== reactionType) {
                         break;
@@ -121,7 +117,7 @@ const init = (mongoose, args = {}) => {
             }
 
             let newReaction = new Reaction({
-                owner,
+                owner: owner._id,
                 type: reactionType
             });
 

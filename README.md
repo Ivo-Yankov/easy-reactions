@@ -1,109 +1,95 @@
-## crud-route-builder
-This is used to build simple routes for create/read/update/delete operations for your Mongoose models.
+## easy-reactions - A mongoose plugin for adding functionality for custom reactions to your existing models.
+
+You can use this plugin to easily add "likes", "dislikes", etc. to any model.
+
+The module creates the following Reaction schema. The plugin adds a reference to this schema to every model it is applied to.
+It also adds a `reactionsCount` field, which contains a key-value map of the aggregated count of every reaction type for the specific object.
+
+```
+const ReactionSchema = new Schema({
+    type: {type: Schema.Types.String, required: true, enum: types},
+    owner: {type: Schema.Types.ObjectId, required: true, ref: "User"}
+}, {versionKey: false});
+```
+
+The Reaction object requires an Owner. This is usually the user that has reacted to something.
+You can specify the owner model in the initialization phase. By default the "User" model name is assumed.
+
+You can also specify what types of reactions you would want to use in your application. By default "like" is the only accepted reaction type.
 
 ### Installation
-``npm install crud-route-builder --save``
+``npm install easy-reactions --save``
 
 ### Usage
-
-```js
-router.use(basePath, buildRoutes(mongooseModel, {
-    extensions: [Routes],
-    before: [Routes],
-    after: [Routes],
-    resourceModifier: (Resource, req, res) => { ...; return Resource; }
-}))
+The plugin needs to be initialised before it is used. To do that, create a `reactions-config.js` file. At this point you can specify what kind of:
 ```
+    const ReactionsInit = require('easy-reactions');
+    module.exports = ReactionsInit(
 
-The `buildRoutes` function expects two parameters:
+        // The first argument is required. You have to pass the mongoose object that is used in your application.
+        require('mongoose'),
 
-`mongooseModel` - A Mongoose model object
-
-`args` - This is used to specify additional routes, overwrite existing ones, or add middleware before or after the default functions.
-The `args` object can have the following properties, all of which accept only arrays of the `Route` object: `extensions`, `before`, `after`.
-  
-`resourceModifier` is used to modify the `Resource` object during runtime.
- It could be used for example in combination with the [mongo-tenant](https://www.npmjs.com/package/mongo-tenant) module,
- to specify the tenancy.
- 
-```js
-    router.use('/example-1', buildRoutes(Example1, {
-        resourceModifier: (Resource, req, res) => {
-            let modifiedResource = Resource.byTenant(req.tenancyId);
-            return modifiedResource;
+        // Optional. You can specify what types of reactions are allowed and the name of the owner model
+        {
+            types: ["like", "dislike", "whatever"],
+            owner: "User"
         }
-    }));
+    );
 ```
 
-### Example
+Make sure to include it in your main application file after you have initialised the mongoose connection:
+```
+    mongoose.connect(mongoDB);
+    ...
+    require('./reactions-config');
+```
 
-```js
-const express = require('express');
-const router = express.Router();
-const {buildRoutes, Route} = require('crud-route-builder');
-const Example1 = require('../models/Example1');
-const Example2 = require('../models/Example2');
+Then apply it to your model:
+```
+    const mongoose = require('mongoose'), Schema = mongoose.Schema;
+    const addReactions = require('../reactions-config').plugin;
 
-const app = express();
+    const itemSchema = Schema({
+        name: String
+    });
 
-router.use('/example-1', buildRoutes(Example1));
-router.use('/example-2', buildRoutes(Example2,{ extensions: [
-        Route('post', '/custom-route', (req, res, next) => {
-            ...
-        })
+    itemSchema.plugin(addReactions);
+    module.exports = mongoose.model('Item', itemSchema);
+```
+
+The following methods will be available for your model:
+```
+    item.addReaction(type, owner)
+    item.removeReaction(type, owner)
+
+    // This one allows only one reaction per owner. The same owner cannot have multiple types of reactions for the same object.
+    // If you want to allow the same owner to apply different types of reactions for the same object use the other methods.
+    item.toggleReaction(type, owner)
+```
+
+
+When fetching your reactable objects, the reactions will be automatically populated.
+
+```
+{
+    reactionsCount: {
+        "like": 2,
+        "dislike": 0,
+    },
+    reactions: [
+        {
+            _id: "...",
+            owner: "...",
+            type: "like"
+        },
+        {
+            _id: "...",
+            owner: "...",
+            type: "like"
+        }
     ],
-    before: [{
-        Route('get', '/all', (req, res, next) => {
-            // This will be executed before the default GET example-2/all functionality
-            ...
-        })
-    }],
-    after: [{
-        Route('get', '/all', (req, res, next) => {
-            // This will be executed after the default GET example-2/all functionality 
-            ...
-            res.send(req.crbResult);    // When an After middleware is specified the result is saved in req.cebResult
-        })
-    }],
-}));
-
-app.use('/', router);
+    _id: "...",
+    ...
+}
 ```
-
-This example will create the following routes:
-
-``GET /example-1/all`` - Returns all documents. Additional GET params can be sent to filter or sort the request:
-
-    _start  = NUMBER
-    _end    = NUMBER
-    _order  = DESC | ASC    
-    _sort   = FIELD NAME    
-    field   = value
-    
-Example: `GET /example-1/all/?start=0&_end=10_order=ASC&_sort=name&color=red` 
-This request will return the first 10 documents, where the field "color" is "red", 
-sorted by the field "name" in ascending order.
-
-``GET /example-1/single/:id `` - Returns a single document by id.
-
-``POST /example-1/`` - Creates a document. The data is expected to be sent in the body. 
-
-``DELETE /example-1/:id`` - Deletes a document by id.
-
-``PUT /example-1/:id`` - Updates a document. The data is expected to be sent in the body. Only updates the provided fields.
-
-The same routes will be created for `/example-2` plus the additional `POST /example-2/custom-route`
-
-You can find a simple example app in the `example` folder. 
-
-### Additional notes
-
-All CRUD functions are exposed and can be used where necessary: 
-
-```js
-    const {getSingle, getAll, create, update, remove} = require('crud-route-builder');
-```
-
----
-
-This module requires you to use `body-parser`. It won't work without it.
+### Check out the [example app](example).

@@ -1,6 +1,5 @@
 const Item = require('./models/Item');
 const User = require('./models/User');
-const OtherUserModel = require('./models/OtherUserModel');
 const Reaction = require('./reactions-config').model;
 
 module.exports = () => {
@@ -17,25 +16,21 @@ module.exports = () => {
     ];
 
     Promise.all([
-    //     Item.remove({}).exec().then(() => {
-    //         console.log("items cleared");
-    //     }),
-    //     User.remove({}).exec().then(() => {
-    //         console.log("users cleared");
-    //     }),
-    //     OtherUserModel.remove({}).exec().then(() => {
-    //         console.log("users cleared");
-    //     }),
-    //     Reaction.remove({}).exec().then(() => {
-    //         console.log("reactions cleared");
-    //     })
+        Item.deleteMany({}).exec().then(() => {
+            console.log("items cleared");
+        }),
+        User.deleteMany({}).exec().then(() => {
+            console.log("users cleared");
+        }),
+        Reaction.deleteMany({}).exec().then(() => {
+            console.log("reactions cleared");
+        })
     ])
         .then(data => {
             console.log("Database cleared.");
             Promise.all([
-                Item.collection.insert(items),
-                User.collection.insert(users),
-                OtherUserModel.collection.insert(users),
+                Item.collection.insertMany(items),
+                User.collection.insertMany(users),
             ])
                 .then(data => {
                     console.log("Data seeding complete.");

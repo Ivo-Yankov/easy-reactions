@@ -3,19 +3,11 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const app = express();
 
-//Set up default mongoose connection
+let mongoDB = 'mongodb://localhost:27017/easy-reactions-example';
 
-let mongoDB = "";
-if (process.env.NODE_ENV === 'test') {
-    mongoDB = 'mongodb://localhost:27017/reactions-example-test';
-} else {
-    mongoDB = 'mongodb://localhost:27017/reactions-example';
-}
-
-mongoose.connect(mongoDB);
-const ReactionsInit = require('./reactions-config');
-const seedData = require('./seedData');
-seedData();
+mongoose.connect(mongoDB, { useNewUrlParser: true });
+require('./reactions-config');
+require('./seedData')();
 
 app.set('view engine', 'jade');
 app.use(bodyParser.json());
