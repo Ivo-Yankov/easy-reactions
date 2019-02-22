@@ -8,5 +8,13 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Ivo-Yankov/easy-reactions.git"
-  }
+  },
+  "keywords": [
+    "reactions",
+    "mongoose",
+    "plugin",
+    "custom reaction",
+    "like",
+    "dislike"
+  ]
 }
