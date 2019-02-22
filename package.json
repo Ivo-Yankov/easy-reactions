@@ -1,6 +1,6 @@
 {
   "name": "easy-reactions",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A plugin for mongoose models that adds methods for custom types of user reactions",
   "main": "index.js",
   "author": "Ivo Yankov",
